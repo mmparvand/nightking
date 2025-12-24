@@ -4,7 +4,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, JSON, String, Text, UniqueConstraint
+from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -58,12 +58,6 @@ class Service(Base):
     protocol: Mapped[ServiceProtocol] = mapped_column(Enum(ServiceProtocol), nullable=False, default=ServiceProtocol.XRAY_VLESS)
     endpoint: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
-    traffic_limit_bytes: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    traffic_used_bytes: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    ip_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    concurrent_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    is_active: Mapped[bool] = mapped_column(default=True)
 
     user: Mapped["User"] = relationship("User", back_populates="services")
     reseller: Mapped["Reseller | None"] = relationship("Reseller", back_populates="services")
@@ -81,14 +75,3 @@ class SubscriptionToken(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
 
     service: Mapped["Service"] = relationship("Service", back_populates="subscription_token")
-
-
-class XrayConfigSnapshot(Base):
-    __tablename__ = "xray_config_snapshots"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
-    config_json: Mapped[str] = mapped_column(Text, nullable=False)
-    applied: Mapped[bool] = mapped_column(default=False)
-    apply_status: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    apply_error: Mapped[str | None] = mapped_column(String(255), nullable=True)

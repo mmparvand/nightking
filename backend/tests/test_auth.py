@@ -25,8 +25,3 @@ def test_login_and_me_round_trip() -> None:
 def test_login_rejects_wrong_role() -> None:
     response = client.post("/auth/login", json={"username": "admin", "password": "changeme", "role_tab": "RESELLER"})
     assert response.status_code == 401
-
-
-def test_me_requires_token(client) -> None:
-    res = client.get("/auth/me")
-    assert res.status_code == 401

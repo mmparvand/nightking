@@ -5,7 +5,7 @@ from typing import Iterable, Optional
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
 
 from .models import Reseller, Service, ServiceProtocol, SubscriptionToken, User
 
@@ -68,31 +68,9 @@ def list_services(db: Session, limit: int, offset: int, reseller_id: int | None 
 
 
 def create_service(
-    db: Session,
-    *,
-    name: str,
-    user_id: int,
-    reseller_id: int | None,
-    protocol: ServiceProtocol,
-    endpoint: str | None,
-    traffic_limit_bytes: int | None = None,
-    expires_at=None,
-    ip_limit: int | None = None,
-    concurrent_limit: int | None = None,
-    is_active: bool | None = True,
+    db: Session, *, name: str, user_id: int, reseller_id: int | None, protocol: ServiceProtocol, endpoint: str | None
 ) -> Service:
-    service = Service(
-        name=name,
-        user_id=user_id,
-        reseller_id=reseller_id,
-        protocol=protocol,
-        endpoint=endpoint,
-        traffic_limit_bytes=traffic_limit_bytes,
-        expires_at=expires_at,
-        ip_limit=ip_limit,
-        concurrent_limit=concurrent_limit,
-        is_active=is_active if is_active is not None else True,
-    )
+    service = Service(name=name, user_id=user_id, reseller_id=reseller_id, protocol=protocol, endpoint=endpoint)
     db.add(service)
     db.commit()
     db.refresh(service)
@@ -109,38 +87,14 @@ def get_service(db: Session, service_id: int, reseller_id: int | None = None) ->
 
 
 def update_service(
-    db: Session,
-    service: Service,
-    *,
-    name: str,
-    protocol: ServiceProtocol,
-    endpoint: str | None,
-    traffic_limit_bytes: int | None = None,
-    expires_at=None,
-    ip_limit: int | None = None,
-    concurrent_limit: int | None = None,
-    is_active: bool | None = None,
+    db: Session, service: Service, *, name: str, protocol: ServiceProtocol, endpoint: str | None
 ) -> Service:
     service.name = name
     service.protocol = protocol
     service.endpoint = endpoint
-    service.traffic_limit_bytes = traffic_limit_bytes
-    if expires_at is not None:
-        service.expires_at = expires_at
-    service.ip_limit = ip_limit
-    service.concurrent_limit = concurrent_limit
-    if is_active is not None:
-        service.is_active = is_active
     db.commit()
     db.refresh(service)
     ensure_subscription_token(db, service)
-    db.refresh(service)
-    return service
-
-
-def update_usage(db: Session, service: Service, *, traffic_used_bytes: int) -> Service:
-    service.traffic_used_bytes = traffic_used_bytes
-    db.commit()
     db.refresh(service)
     return service
 
@@ -163,12 +117,3 @@ def ensure_subscription_token(db: Session, service: Service) -> SubscriptionToke
         raise
     db.refresh(token)
     return token
-
-
-def get_subscription_by_token(db: Session, token: str) -> SubscriptionToken | None:
-    stmt = (
-        select(SubscriptionToken)
-        .where(SubscriptionToken.token == token)
-        .options(selectinload(SubscriptionToken.service).selectinload(Service.user))
-    )
-    return db.scalar(stmt)
