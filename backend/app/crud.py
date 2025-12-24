@@ -5,7 +5,7 @@ from typing import Iterable, Optional
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
 
 from .models import Reseller, Service, ServiceProtocol, SubscriptionToken, User
 
@@ -117,12 +117,3 @@ def ensure_subscription_token(db: Session, service: Service) -> SubscriptionToke
         raise
     db.refresh(token)
     return token
-
-
-def get_subscription_by_token(db: Session, token: str) -> SubscriptionToken | None:
-    stmt = (
-        select(SubscriptionToken)
-        .where(SubscriptionToken.token == token)
-        .options(selectinload(SubscriptionToken.service).selectinload(Service.user))
-    )
-    return db.scalar(stmt)

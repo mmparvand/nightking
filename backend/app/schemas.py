@@ -10,9 +10,6 @@ class Role(str, Enum):
     ADMIN = "ADMIN"
     RESELLER = "RESELLER"
 
-class ServiceProtocol(str, Enum):
-    XRAY_VLESS = "XRAY_VLESS"
-
 
 class LoginRequest(BaseModel):
     username: str = Field(..., min_length=1)
@@ -33,80 +30,3 @@ class TokenResponse(BaseModel):
 
 class Message(BaseModel):
     detail: str
-
-
-# Domain models
-class UserBase(BaseModel):
-    email: str
-    full_name: str
-    reseller_id: Optional[int] = None
-
-    class Config:
-        orm_mode = True
-
-
-class UserCreate(UserBase):
-    email: str
-    full_name: str
-
-
-class UserUpdate(BaseModel):
-    email: str
-    full_name: str
-
-    class Config:
-        orm_mode = True
-
-
-class UserOut(UserBase):
-    id: int
-
-
-class PaginatedUsers(BaseModel):
-    items: list[UserOut]
-    limit: int
-    offset: int
-
-
-class ServiceBase(BaseModel):
-    name: str
-    user_id: int
-    reseller_id: Optional[int] = None
-    protocol: ServiceProtocol = ServiceProtocol.XRAY_VLESS
-    endpoint: Optional[str] = None
-
-    class Config:
-        orm_mode = True
-
-
-class ServiceCreate(ServiceBase):
-    pass
-
-
-class ServiceUpdate(BaseModel):
-    name: str
-    protocol: ServiceProtocol = ServiceProtocol.XRAY_VLESS
-    endpoint: Optional[str] = None
-
-    class Config:
-        orm_mode = True
-
-
-class SubscriptionTokenOut(BaseModel):
-    id: int
-    token: str
-    service_id: int
-
-    class Config:
-        orm_mode = True
-
-
-class ServiceOut(ServiceBase):
-    id: int
-    subscription_token: Optional[SubscriptionTokenOut] = None
-
-
-class PaginatedServices(BaseModel):
-    items: list[ServiceOut]
-    limit: int
-    offset: int
