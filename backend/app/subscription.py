@@ -26,9 +26,9 @@ def _build_vless_payload(sub_token: SubscriptionToken, settings: Settings) -> st
     service = sub_token.service
     if not service:
         raise HTTPException(status_code=404, detail="Service not found for token")
-    endpoint = service.endpoint or f"{settings.subscription_domain}:{settings.xray_inbound_port}"
+    endpoint = service.endpoint or f"{settings.subscription_domain}:{settings.subscription_port}"
     if ":" not in endpoint:
-        endpoint = f"{endpoint}:{settings.xray_inbound_port}"
+        endpoint = f"{endpoint}:{settings.subscription_port}"
     friendly_name = quote(service.name or f"service-{service.id}")
     query = urlencode({"encryption": "none", "type": "tcp", "security": "tls", "sni": settings.subscription_domain})
     return f"vless://{sub_token.token}@{endpoint}?{query}#{friendly_name}"
