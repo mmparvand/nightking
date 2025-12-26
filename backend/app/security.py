@@ -5,8 +5,6 @@ from typing import Any, Dict, Optional
 
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-import hmac
-import hashlib
 
 from .config import get_settings
 
@@ -51,8 +49,3 @@ def decode_token(token: str) -> Optional[dict[str, Any]]:
         return payload
     except JWTError:
         return None
-
-
-def sign_payload(secret: str, body: bytes, timestamp: str, nonce: str) -> str:
-    msg = body + timestamp.encode() + nonce.encode()
-    return hmac.new(secret.encode(), msg, hashlib.sha256).hexdigest()

@@ -52,10 +52,6 @@ def create_backup(settings: Settings, db_session: Session, actor: str) -> dict[s
         "subscription_domain": settings.subscription_domain,
         "subscription_port": settings.subscription_port,
         "subscription_scheme": settings.subscription_scheme,
-        "rate_limits": {
-            "login_per_min": settings.rate_limit_login_per_min,
-            "sub_per_min": settings.rate_limit_sub_per_min,
-        },
     }
     (work_dir / "settings.json").write_text(json.dumps(settings_json))
     version_json = {
